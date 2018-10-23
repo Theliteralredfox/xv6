@@ -17,43 +17,6 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-// Print a process listing to console.  For debugging.
-// Runs when user types ^P on console.
-// No lock to avoid wedging a stuck machine further.
-
-procdump(void)
-{
-	cprintf("Total Tickets: %d\n\n", total_tickets);
-	static char *states[] = {
-		[UNUSED]    "unused",
-		[EMBRYO]    "embryo",
-		[SLEEPING]  "sleep ",
-		[RUNNABLE]  "runble",
-		[RUNNING]   "run   ",
-		[ZOMBIE]    "zombie"
-	};
-	int i;
-	struct proc *p;
-	char *state;
-	uint pc[10];
-
-	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-		if(p->state == UNUSED)
-			continue;
-		if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
-			state = states[p->state];
-		else
-			state = "???";
-		cprintf("%d %s %s", p->pid, state, p->name);
-		if(p->state == SLEEPING){
-			getcallerpcs((uint*)p->context->ebp+2, pc);
-			for(i=0; i<10 && pc[i] != 0; i++)
-				cprintf(" %p", pc[i]);
-		}
-		cprintf("\n");
-	}
-}
-
 pinit(void)
 {
 	initlock(&ptable.lock, "ptable");
@@ -534,4 +497,41 @@ kill(int pid)
 	}
 	release(&ptable.lock);
 	return -1;
+}
+
+// Print a process listing to console.  For debugging.
+// Runs when user types ^P on console.
+// No lock to avoid wedging a stuck machine further.
+
+procdump(void)
+{
+	cprintf("Total Tickets: %d\n\n", total_tickets);
+	static char *states[] = {
+		[UNUSED]    "unused",
+		[EMBRYO]    "embryo",
+		[SLEEPING]  "sleep ",
+		[RUNNABLE]  "runble",
+		[RUNNING]   "run   ",
+		[ZOMBIE]    "zombie"
+	};
+	int i;
+	struct proc *p;
+	char *state;
+	uint pc[10];
+
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+		if(p->state == UNUSED)
+			continue;
+		if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+			state = states[p->state];
+		else
+			state = "???";
+		cprintf("%d %s %s", p->pid, state, p->name);
+		if(p->state == SLEEPING){
+			getcallerpcs((uint*)p->context->ebp+2, pc);
+			for(i=0; i<10 && pc[i] != 0; i++)
+				cprintf(" %p", pc[i]);
+		}
+		cprintf("\n");
+	}
 }
