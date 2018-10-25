@@ -31,7 +31,15 @@ void setproctickets(struct proc* pp, int n)
 	pp->tickets = n;
 	total_tickets += pp->tickets;
 }
-
+static char *states[] = 
+{
+	[UNUSED]    "unused",
+	[EMBRYO]    "embryo",
+	[SLEEPING]  "sleep ",
+	[RUNNABLE]  "runble",
+	[RUNNING]   "run   ",
+	[ZOMBIE]    "zombie"
+};
 // Just after sleeping
 void storetickets(struct proc* pp)
 {
@@ -506,14 +514,6 @@ kill(int pid)
 procdump(void)
 {
 	cprintf("Total Tickets: %d\n\n", total_tickets);
-	static char *states[] = {
-		[UNUSED]    "unused",
-		[EMBRYO]    "embryo",
-		[SLEEPING]  "sleep ",
-		[RUNNABLE]  "runble",
-		[RUNNING]   "run   ",
-		[ZOMBIE]    "zombie"
-	};
 	int i;
 	struct proc *p;
 	char *state;
